@@ -3,16 +3,23 @@
  *
  * For Amelia events tagged EXTERNAL (matched by name via the localized data blob):
  *   - relabels the booking button to "Find out more"
- *   - flags the card so CSS can hide price/capacity/spots
- *   - intercepts clicks anywhere on the card and opens the external URL in a new tab
+ *   - flags the card/dialog so CSS can hide price/capacity/spots
+ *   - intercepts the click and opens the external URL in a new tab
  *
  * The public Amelia widget is a Vue SPA that re-renders, so we use a MutationObserver
  * to re-apply the labels, and a capture-phase click listener (which runs before Vue's
  * own handlers) to reliably redirect instead of opening the booking flow.
  *
- * Two surfaces are handled (class names verified against Amelia v3 compiled assets):
- *   - List card:     .am-ec          (name .am-ec__info-name,      button .am-ec__actions-btn)
- *   - Calendar card: .am-ecs__side-card (name .am-ecs__side-card__name, button .am-ecs__side-card__footer)
+ * Surfaces handled (class names verified against Amelia v3 compiled assets):
+ *   - Event list card:     .am-ec            (name .am-ec__info-name,        button .am-ec__actions-btn)
+ *   - Calendar side card:  .am-ecs__side-card (name .am-ecs__side-card__name, button .am-ecs__side-card__footer)
+ *   - Calendar event modal: .am-dialog-el / .am-dialog-popup
+ *                          (name .am-ec__info-name, button .am-elf__footer .am-button--primary)
+ *
+ * The calendar month-grid opens a dialog (.am-dialog-el) that lazy-loads the event-list
+ * components, so the booking button there is .am-elf__footer .am-button--primary (built at
+ * runtime as "am-button--" + category) and sits OUTSIDE the .am-ec card - hence handled
+ * as its own surface.
  */
 ( function () {
 	'use strict';
@@ -44,27 +51,39 @@
 		return urlByName[ normalize( name ) ] || null;
 	}
 
-	// The two card surfaces: root selector + the name element within it.
+	// A surface = a container element + how to find the event name + the booking button
+	// within it. Order matters: most specific card first, dialog wrappers last (fallback).
+	var DIALOG_BUTTON = '.am-elf__footer .am-button--primary, .am-elf__footer .am-button--waiting';
 	var SURFACES = [
 		{ card: '.am-ec', name: '.am-ec__info-name', button: '.am-ec__actions-btn' },
-		{ card: '.am-ecs__side-card', name: '.am-ecs__side-card__name', button: '.am-ecs__side-card__footer' }
+		{ card: '.am-ecs__side-card', name: '.am-ecs__side-card__name', button: '.am-ecs__side-card__footer' },
+		{ card: '.am-dialog-el', name: '.am-ec__info-name', button: DIALOG_BUTTON },
+		{ card: '.am-dialog-popup', name: '.am-ec__info-name', button: DIALOG_BUTTON }
 	];
 
+	// What should trigger the redirect when clicked. Simple cards are clickable anywhere;
+	// the dialog is only triggered by its primary/waiting booking button (so the close
+	// button, scrolling, etc. still work).
+	var CLICK_SELECTOR = '.am-ec, .am-ecs__side-card, ' + DIALOG_BUTTON;
+
 	/**
-	 * Resolve the external URL for whichever card contains the given element.
+	 * Resolve the external URL for whichever surface contains the given element.
 	 *
-	 * @param {Element} el An element inside (or equal to) a card.
-	 * @return {?string} The external URL, or null if the card is not external.
+	 * @param {Element} el An element inside (or equal to) a card/dialog.
+	 * @return {?string} The external URL, or null if not external.
 	 */
 	function urlForElement( el ) {
 		for ( var i = 0; i < SURFACES.length; i++ ) {
-			var card = el.closest( SURFACES[ i ].card );
-			if ( ! card ) {
+			var container = el.closest( SURFACES[ i ].card );
+			if ( ! container ) {
 				continue;
 			}
-			var nameEl = card.querySelector( SURFACES[ i ].name );
+			var nameEl = container.querySelector( SURFACES[ i ].name );
 			if ( nameEl ) {
-				return urlForName( nameEl.textContent );
+				var url = urlForName( nameEl.textContent );
+				if ( url ) {
+					return url;
+				}
 			}
 		}
 		return null;
@@ -82,24 +101,23 @@
 	}
 
 	/**
-	 * Relabel buttons and flag external cards so the CSS can hide price/capacity/spots.
+	 * Relabel buttons and flag external surfaces so the CSS can hide price/capacity/spots.
 	 */
 	function decorate() {
 		SURFACES.forEach( function ( surface ) {
-			document.querySelectorAll( surface.card ).forEach( function ( card ) {
-				var nameEl = card.querySelector( surface.name );
+			document.querySelectorAll( surface.card ).forEach( function ( container ) {
+				var nameEl = container.querySelector( surface.name );
 				if ( ! nameEl || ! urlForName( nameEl.textContent ) ) {
 					return;
 				}
-				card.classList.add( 'lcaee-external' );
-				setButtonLabel( card.querySelector( surface.button ) );
+				container.classList.add( 'lcaee-external' );
+				setButtonLabel( container.querySelector( surface.button ) );
 			} );
 		} );
 	}
 
 	// Capture-phase interceptor: runs before Vue's bubble-phase handlers, so we can
-	// stop the booking flow and redirect instead. Clicking anywhere on an external
-	// card (not just the button) opens the URL.
+	// stop the booking flow and redirect instead.
 	document.addEventListener(
 		'click',
 		function ( e ) {
@@ -108,12 +126,12 @@
 				return;
 			}
 
-			var card = target.closest( '.am-ec, .am-ecs__side-card' );
-			if ( ! card ) {
+			var trigger = target.closest( CLICK_SELECTOR );
+			if ( ! trigger ) {
 				return;
 			}
 
-			var url = urlForElement( card );
+			var url = urlForElement( trigger );
 			if ( ! url ) {
 				return;
 			}

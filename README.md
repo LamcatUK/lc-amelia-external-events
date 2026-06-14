@@ -51,7 +51,10 @@ Amelia's public event list and calendar are a Vue single-page app that fetches e
 | Surface | Card root | Event name | Button |
 | --- | --- | --- | --- |
 | Event list | `.am-ec` | `.am-ec__info-name` | `.am-ec__actions-btn` |
-| Events calendar | `.am-ecs__side-card` | `.am-ecs__side-card__name` | `.am-ecs__side-card__footer` |
+| Events calendar (sidebar) | `.am-ecs__side-card` | `.am-ecs__side-card__name` | `.am-ecs__side-card__footer` |
+| Calendar event modal | `.am-dialog-el` / `.am-dialog-popup` | `.am-ec__info-name` | `.am-elf__footer .am-button--primary` |
+
+The calendar month-grid opens a dialog that lazy-loads the event-list components, so its booking button is `.am-elf__footer .am-button--primary` (the modifier is built at runtime as `"am-button--" + category`) and sits outside the `.am-ec` card — it is therefore handled as its own surface.
 
 ## Data Storage
 

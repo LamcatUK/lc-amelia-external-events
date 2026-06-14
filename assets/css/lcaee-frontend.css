@@ -25,3 +25,20 @@
 .am-ecs__side-card.lcaee-external .am-ecs__side-card__status {
 	display: none !important;
 }
+
+/*
+ * Calendar event modal (and the step-form dialog). The dialog lazy-loads the event-list
+ * components, so it reuses the .am-ec__info-* markup from the list card.
+ */
+.am-dialog-el.lcaee-external .am-ec__info-price,
+.am-dialog-el.lcaee-external .am-ec__actions-price,
+.am-dialog-el.lcaee-external .am-ec__info-capacity,
+.am-dialog-el.lcaee-external .am-ec__info-availability,
+.am-dialog-el.lcaee-external .am-ec__info-waiting-list,
+.am-dialog-popup.lcaee-external .am-ec__info-price,
+.am-dialog-popup.lcaee-external .am-ec__actions-price,
+.am-dialog-popup.lcaee-external .am-ec__info-capacity,
+.am-dialog-popup.lcaee-external .am-ec__info-availability,
+.am-dialog-popup.lcaee-external .am-ec__info-waiting-list {
+	display: none !important;
+}

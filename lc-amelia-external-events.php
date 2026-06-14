@@ -3,7 +3,7 @@
  * Plugin Name: Amelia External Events
  * Plugin URI: https://github.com/LamcatUK/lc-amelia-external-events
  * Description: Lets Amelia events tagged "EXTERNAL" link out to a third-party website instead of opening the Amelia booking flow. The booking button is relabelled and price/capacity/spots are hidden on the public calendar and event list.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Lamcat - DS
  * License: GPL v2 or later
  * Text Domain: lc-amelia-external-events
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LCAEE_VERSION', '1.0.0' );
+define( 'LCAEE_VERSION', '1.0.1' );
 define( 'LCAEE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'LCAEE_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
