@@ -102,16 +102,22 @@
 
 	/**
 	 * Relabel buttons and flag external surfaces so the CSS can hide price/capacity/spots.
+	 *
+	 * The calendar dialog is a single element reused across events, so the flag is cleared
+	 * when the current content is not an external event (per-event cards are recreated by
+	 * Vue, so this is effectively a no-op for them).
 	 */
 	function decorate() {
 		SURFACES.forEach( function ( surface ) {
 			document.querySelectorAll( surface.card ).forEach( function ( container ) {
 				var nameEl = container.querySelector( surface.name );
-				if ( ! nameEl || ! urlForName( nameEl.textContent ) ) {
-					return;
+
+				if ( nameEl && urlForName( nameEl.textContent ) ) {
+					container.classList.add( 'lcaee-external' );
+					setButtonLabel( container.querySelector( surface.button ) );
+				} else {
+					container.classList.remove( 'lcaee-external' );
 				}
-				container.classList.add( 'lcaee-external' );
-				setButtonLabel( container.querySelector( surface.button ) );
 			} );
 		} );
 	}
