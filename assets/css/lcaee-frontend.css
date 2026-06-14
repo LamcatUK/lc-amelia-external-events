@@ -1,0 +1,27 @@
+/**
+ * Amelia External Events - Front-end styles
+ *
+ * Hide price / capacity / spots on event cards flagged as external, so they read as
+ * informational "link out" cards rather than bookable events. Scoped to .lcaee-external
+ * so normal Amelia events are untouched.
+ *
+ * Class names are verified against Amelia's compiled v3 assets:
+ *   - List card:        v3/public/assets/eventListForm.*.css   (.am-ec__*)
+ *   - Calendar card:    v3/public/assets/eventCalendarForm.*.css (.am-ecs__side-card__*)
+ */
+
+/* List card (event list shortcode) */
+.am-ec.lcaee-external .am-ec__info-price,
+.am-ec.lcaee-external .am-ec__actions-price,
+.am-ec.lcaee-external .am-ec__info-capacity,
+.am-ec.lcaee-external .am-ec__info-availability,
+.am-ec.lcaee-external .am-ec__info-waiting-list {
+	display: none !important;
+}
+
+/* Calendar widget side card (events calendar shortcode) */
+.am-ecs__side-card.lcaee-external .am-ecs__side-card__price,
+.am-ecs__side-card.lcaee-external .am-ecs__side-card__spots,
+.am-ecs__side-card.lcaee-external .am-ecs__side-card__status {
+	display: none !important;
+}
